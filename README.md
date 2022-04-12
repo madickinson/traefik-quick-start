@@ -51,3 +51,7 @@ In this guide we will be shipping Traefik with two configuration files. Both of 
 
 # SSL Certificates
 As described above, we're using Cloudflare's origin server certificates. To create a new origin server certificate, navigate to your Cloudflare dashboard under `SSL/TLS` and click `Origin Server`, then `Create Certificate`. The certificate should contain two hostnames by default. `example.com` and `*.example.com` (It shows your domain name instead of example.com). Leave everything as it is, make the certificate valid for 15 years and click `Create`. After you've successfully generated the certificate, store the certificate as `example.com.crt` and the key as `example.com.key`. Those have to be uploaded to the `certs` folder on your server.
+
+# Feedback
+Found a typo, got something to add to this guide or ideas for improvement?<br>
+Open an issue and we'll get it fixed! Thank you very much in advance!
