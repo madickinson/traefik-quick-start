@@ -8,3 +8,9 @@ Reading the official documentation over at [Traefik Labs](https://doc.traefik.io
 * [Docker](https://docs.docker.com/engine/install/) running on a server
 * [Docker Compose](https://docs.docker.com/compose/install/) installed on that server
 * Ports `80`, `443` and `8080` (all TCP) opened in the firewall (If you are running the server behind a firewall.)
+
+# What this Guide includes
+This guide will explain to you how you can set up Traefik on a single instance/server, that is running Docker. It does **not include** the setup of Let's Encrypt certificats using the ACME challenge (yet). *(Might add it later, depends on the demand for it.)* The certificates used in this guide are Cloudflare origin server certificates using SSL strict mode enabled in the Cloudflare dashboard. You can find more information about that under [SSL Certificates](#ssl-certificates).
+
+# SSL Certificates
+As described above, we're using Cloudflare's origin server certificates. To create a new origin server certificate, navigate to your Cloudflare dashboard under `SSL/TLS` and click `Origin Server`, then `Create Certificate`. The certificate should contain two hostnames by default. `example.com` and `*.example.com` (It shows your domain name instead of example.com). Leave everything as it is, make the certificate valid for 15 years and click `Create`. After you've successfully generated the certificate, store the certificate as `example.com.crt` and the key as `example.com.key`. Those have to be uploaded to the `certs` folder on your server.
