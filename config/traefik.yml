@@ -1,0 +1,27 @@
+global:
+    sendAnonymousUsage: false
+    checkNewVersion: true
+
+api:
+    insecure: true
+
+providers:
+    docker:
+        endpoint: "unix:///var/run/docker.sock"
+        watch: true
+    file:
+        filename: /etc/traefik/dynamic.yml
+        watch: true
+
+entryPoints:
+    http:
+        address: ":80"
+    https:
+        address: ":443"
+
+##############################################################################
+# You can configure Traefik Pilot to get notified when your proxy goes down. #
+# Check it out here: https://traefik.io/traefik-pilot/                       #
+##############################################################################
+# pilot:
+#     token: ""
