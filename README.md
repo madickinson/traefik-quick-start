@@ -41,8 +41,7 @@ Traefik allows you to configure it in multiple ways. We're going for the `config
 The pros and cons of both of those methods are pretty simple to sum up. Using labels makes your docker-compose files much more readable and easier to migrate to a new system. Services will configure themselves, however you'll miss out in terms flexibility a little bit as you have to restart the container every time you make changes to the labels. Writing everything in the dynamic configuration file makes your code a horror to read and maintain but you will be able to make changes to your containers without having to restart them. Services have to be manually configured and ports also have to be mapped manually.
 
 # The configuration Files
-In this guide we will be shipping Traefik with two configuration files. Both of which are important and serve a very specific purpose.<br>
-Feel free to modify them to your needs and requirements. More information about the configuration parameters can be found here:<br>
+In this guide we will be shipping Traefik with two configuration files. Both of which are important and serve a very specific purpose. Feel free to modify them to your needs and requirements. More information about the configuration parameters can be found here:<br>
 [Configuration overview](https://doc.traefik.io/traefik/getting-started/configuration-overview/)
 
 | Reference (Traefik docs) | File in repository | File will be read ... | Specialties | Notes |
