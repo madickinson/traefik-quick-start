@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+    vaultwarden:
+        image: vaultwarden/server:1.24.0
+        container_name: vaultwarden
+        restart: unless-stopped
+        volumes:
+            - ./vaultwarden:/data
+        environment:
+            - WEBSOCKET_ENABLED=true
+            - ADMIN_TOKEN=${VAULTWARDEN_ADMIN_TOKEN}
+            - DOMAIN=${VAULTWARDEN_URL}
+            - SIGNUPS_ALLOWED=false
+            - SIGNUPS_VERIFY=true
+            - SIGNUPS_DOMAINS_WHITELIST=example.com,mydomain.net
+        labels:
+            # Services
+            - "traefik.enable=true"
+            - "traefik.http.services.vaultwarden-ui.loadbalancer.server.port=80"
+            - "traefik.http.services.vaultwarden-ws.loadbalancer.server.port=3012"
+            # Webinterface HTTP (to HTTPS redirect)
+            - "traefik.http.routers.vaultwarden.rule=Host(`vault.example.com`)"
+            - "traefik.http.routers.vaultwarden.entrypoints=http"
+            - "traefik.http.routers.vaultwarden.service=vaultwarden-ui"
+            - "traefik.http.routers.vaultwarden.middlewares=http-to-https@file"
+            # Webinterface HTTPS
+            - "traefik.http.routers.vaultwarden-ssl.rule=Host(`vault.example.com`)"
+            - "traefik.http.routers.vaultwarden-ssl.entrypoints=https"
+            - "traefik.http.routers.vaultwarden-ssl.service=vaultwarden-ui"
+            - "traefik.http.routers.vaultwarden-ssl.tls=true"
+            # Websocket HTTP (to HTTPS redirect)
+            - "traefik.http.routers.vaultwarden-websocket.rule=Host(`vault.example.com`) && Path(`/notifications/hub`)"
+            - "traefik.http.routers.vaultwarden-websocket.entrypoints=http"
+            - "traefik.http.routers.vaultwarden-websocket.service=vaultwarden-ws"
+            - "traefik.http.routers.vaultwarden-websocket.middlewares=http-to-https@file"
+            # Websocket HTTPS
+            - "traefik.http.routers.vaultwarden-websocket-ssl.rule=Host(`vault.example.com`) && Path(`/notifications/hub`)"
+            - "traefik.http.routers.vaultwarden-websocket-ssl.entrypoints=https"
+            - "traefik.http.routers.vaultwarden-websocket-ssl.service=vaultwarden-ws"
+            - "traefik.http.routers.vaultwarden-websocket-ssl.tls=true"
+        networks:
+            - proxy
+networks:
+    proxy:
+        external: true
