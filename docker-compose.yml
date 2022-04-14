@@ -1,1 +1,33 @@
-
+version: '3.9'
+services:
+    traefik:
+        image: traefik:v2.7
+        container_name: traefik
+        restart: always
+        ports:
+            - 80:80
+            - 443:443
+            - 8080:8080
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ./config:/etc/traefik
+            - ./certs:/certs
+        labels:
+            # Service
+            - "traefik.enable=true"
+            # HTTP (to HTTPS redirect)
+            - "traefik.http.routers.traefik.rule=Host(`proxy.example.com`)"
+            - "traefik.http.routers.traefik.entrypoints=http"
+            - "traefik.http.routers.traefik.service=api@internal"
+            - "traefik.http.routers.traefik.middlewares=http-to-https@file"
+            # HTTPS with auth
+            - "traefik.http.routers.traefik-ssl.rule=Host(`proxy.example.com`)"
+            - "traefik.http.routers.traefik-ssl.entrypoints=https"
+            - "traefik.http.routers.traefik-ssl.service=api@internal"
+            - "traefik.http.routers.traefik-ssl.tls=true"
+            - "traefik.http.routers.traefik-ssl.middlewares=auth@file"
+        networks:
+            - proxy
+networks:
+    proxy:
+        external: true
