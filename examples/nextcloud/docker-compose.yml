@@ -1,0 +1,52 @@
+version: '3.9'
+services:
+    nextcloud:
+        image: nextcloud:23.0.3-apache
+        container_name: nextcloud
+        restart: unless-stopped
+        volumes:
+            - ./nextcloud:/var/www/html
+        environment:
+            - PHP_MEMORY_LIMIT=1G
+            - PHP_UPLOAD_LIMIT=10G
+        labels:
+            # Services
+            - "traefik.enable=true"
+            - "traefik.docker.network=proxy"
+            # Webinterface HTTP (to HTTPS redirect)
+            - "traefik.http.routers.nextcloud.rule=Host(`cloud.example.com`)"
+            - "traefik.http.routers.nextcloud.entrypoints=http"
+            - "traefik.http.routers.nextcloud.middlewares=http-to-https@file"
+            # Webinterface HTTPS
+            - "traefik.http.routers.nextcloud-ssl.rule=Host(`cloud.example.com`)"
+            - "traefik.http.routers.nextcloud-ssl.entrypoints=https"
+            - "traefik.http.routers.nextcloud-ssl.middlewares=nextcloud-webdav,nextcloud-headers@file"
+            - "traefik.http.routers.nextcloud-ssl.tls=true"
+            # Middlewares
+            - "traefik.http.middlewares.nextcloud-webdav.replacepathregex.regex=^/.well-known/ca(l|rd)dav"
+            - "traefik.http.middlewares.nextcloud-webdav.replacepathregex.replacement=/remote.php/dav/"
+        depends_on:
+            - nextcloud-db
+        networks:
+            - proxy
+            - default
+    nextcloud-db:
+        image: mariadb:10.7.3
+        container_name: nextcloud-db
+        restart: unless-stopped
+        volumes:
+            - ./nextcloud-db:/var/lib/mysql
+        environment:
+            - MYSQL_ALLOW_EMPTY_PASSWORD=true
+            - MYSQL_DATABASE=${NEXTCLOUD_DB_NAME}
+            - MYSQL_USER=${NEXTCLOUD_DB_USER}
+            - MYSQL_PASSWORD=${NEXTCLOUD_DB_PASS}
+            - MARIADB_AUTO_UPGRADE=true
+        labels:
+            # No need to be exposed
+            - "traefik.enable=false"
+        networks:
+            - default
+networks:
+    proxy:
+        external: true
