@@ -52,6 +52,46 @@ In this guide we will be shipping Traefik with two configuration files. Both of 
 # SSL Certificates
 As described above, we're using Cloudflare's origin server certificates. To create a new origin server certificate, navigate to your Cloudflare dashboard under `SSL/TLS` and click `Origin Server`, then `Create Certificate`. The certificate should contain two hostnames by default. `example.com` and `*.example.com` (It shows your domain name instead of example.com). Leave everything as it is, make the certificate valid for 15 years and click `Create`. After you've successfully generated the certificate, store the certificate as `example.com.crt` and the key as `example.com.key`. Those have to be uploaded to the `certs` folder on your server.
 
+# Deploy on your Server
+To deploy the files of this repository to your server you can just go ahead and download the latest version as a `.zip`-File and extract it on your server. The static configuration can more or less be left "as is", as none of what is configured there is critical for later use. You should put your focus on the dynamic configuration file instead. Most of the configuration like middleware and certificates are configured there.
+
+## Install SSL Certificates
+The SSL certificates have to be uploaded to the `certs` folder on the server. A good habit is to call them like your domain name including the top level domain and it's extension at the end. That would be `.crt` for certificate files and `.key` for the key files. After you're done uploading the certificates to your server, all you have to do is add them to the dynamic configuration file that is provided with this repository. Traefik will pick up your certs automatically, once you have added them to the dynamic configuration file.
+
+## HTTP to HTTPS redirects
+This part might be a little confusing at first but you can not redirect to HTTPS immediately. You will have to configure your services to listen to the entrypoint on port `:80` first and pass the connection onto your HTTPS entrypoint on port `:443`. We're doing this by putting a middleware on our connection over port 80 that will automatically redirect us to port 443. From there on we will enable TLS so Traefik can search our certs folder and pick the correct certificate accordingly.
+
+## Create a network
+For Traefik to be able communicate with your containers you need to put them all into the same network. Docker Compose creates networks by default, however they are not persistent when you take down your docker-compose.yml file. That's why we will need to create our own network. This is very simple. All you have to do is run the following command: `docker network create proxy` This will create a new network called `proxy` using the `bridge` driver. We will be adding all of our containers to this network.
+
+### Join the network
+For your containers to now be able to be picked up by Traefik you need to join them into the same network. You can easily do so by putting this at end of your compose file: 
+```yaml
+networks:
+  proxy:
+    external: true
+```
+On your service, you tell it to join the network:
+```yaml
+networks:
+  - proxy
+```
+
+## Run a container
+That was all we had to do already. We are now ready and prepared to run containers and proxy them through Traefik! Create a new docker-compose.yml file or use one of the example files from the `examples` folder. We will be explaining what most of the parameters in the `docker-compose.yml` actually mean and do.
+
+### Labels (The most important)
+It would be beneficial for you to understand what you're actually configuring, that's why we'll walk you through the most important labels that you can configure in your compose files:
+
+```yaml
+labels:
+  - "traefik.enable=true" # Tells Traefik to proxy this container. If set to false, Traefik will ignore this container. Useful for databases that run behind websites and don't have to be exposed to the public.
+  - "traefik.docker.network=proxy" # The network Traefik uses to proxy connections. Should always be set to the network that Traefik is part of. MUST be set when your container is part of multiple networks or else Traefik will pick a random network every time you restart the container
+```
+
+# Proxy Webinterface - default Credentials
+Traefik comes with a nice looking and very informative webinterface. It does not let you configure anything through this interface but we still strongly advise against make it publicly accessible anyways. That's why with our configuration it comes with a http-auth by default. The default username is `proxy` and the default password is `changeme`. You can change the details, or add new users in the `config/dynamic.yml` file. Use this [generator](https://www.web2generators.com/apache-tools/htpasswd-generator) to create new credentials.
+
 # Feedback
 Found a typo, got something to add to this guide or ideas for improvement?<br>
 Open an issue and we'll get it fixed! Thank you very much in advance!
