@@ -1,4 +1,4 @@
-# Webdav Header
+# Special Middleware
 In order for Nextcloud to function properly you will need to add this middleware to your dynamic configuration file:
 
 ```yaml
